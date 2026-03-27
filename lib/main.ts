@@ -4,7 +4,7 @@ export function hashData(data: string): string {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-export function canonicalizeData(data: Record<string, any>): string {
+export function canonicalizeData(data: Record<string, unknown>): string {
     return JSON.stringify(
         Object.keys(data)
             .sort()
@@ -13,6 +13,16 @@ export function canonicalizeData(data: Record<string, any>): string {
                 return acc;
             }, {} as Record<string, any>)
     );
+}
+
+export function signData(canonicalizedData: string): string {
+    const signer = crypto.createSign('rsa-sha256');
+    signer.update(canonicalizedData);
+    signer.end();
+
+    const rsa_private_key = process.env.RSA_PRIVATE_KEY!.replace(/\\n/g, '\n');
+    const signature = signer.sign(rsa_private_key, 'base64');
+    return signature;
 }
 
 export function verifySignature(canonicalizedData: string, signature: string) {
@@ -33,4 +43,12 @@ export function verifySignature(canonicalizedData: string, signature: string) {
         console.error("Lỗi khi xác thực chữ ký", error);
         return false;
     }
+}
+
+export function getPrivateKey(): string {
+    const privateKey = process.env.RSA_PRIVATE_KEY;
+    if (!privateKey) {
+        throw new Error('RSA_PRIVATE_KEY không được cấu hình');
+    }
+    return privateKey.replace(/\\n/g, '\n');
 }
