@@ -26,23 +26,18 @@ export function signData(canonicalizedData: string): string {
 }
 
 export function verifySignature(canonicalizedData: string, signature: string) {
-    try {
-        //Băm dữ liệu
-        const verifier = crypto.createVerify('rsa-sha256');
-        verifier.update(canonicalizedData);
-        verifier.end();
+    //Băm dữ liệu
+    const verifier = crypto.createVerify('rsa-sha256');
+    verifier.update(canonicalizedData);
+    verifier.end();
 
-        //Lấy khóa công khai
-        const rsa_public_key = process.env.RSA_PUBLIC_KEY!.replace(/\\n/g, '\n');
+    //Lấy khóa công khai
+    const rsa_public_key = process.env.RSA_PUBLIC_KEY!.replace(/\\n/g, '\n');
 
-        //Xác thực chữ ký
-        const isValid = verifier.verify(rsa_public_key, signature, 'base64');
+    //Xác thực chữ ký
+    const isValid = verifier.verify(rsa_public_key, signature, 'base64');
 
-        return isValid;
-    } catch (error) {
-        console.error("Lỗi khi xác thực chữ ký", error);
-        return false;
-    }
+    return isValid;
 }
 
 export function getPrivateKey(): string {

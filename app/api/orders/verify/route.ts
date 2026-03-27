@@ -15,6 +15,13 @@ export async function GET(req: NextRequest) {
         WHERE o.id = ${idOrder}
     `;
 
+    if (resultQuery.length === 0) {
+        return NextResponse.json(
+            { success: false, message: "Đơn hàng không tồn tại" },
+            { status: 404 }
+        );
+    }
+
     const resultData = resultQuery[0];
     const order = resultData.order;
     const product = resultData.product;
@@ -33,7 +40,11 @@ export async function GET(req: NextRequest) {
     const canonicalProduct = canonicalizeData(dataToHash);
 
     // Xác thực
-    const isValid = verifySignature(canonicalProduct, order.signature);
-
-    return NextResponse.json({ orderId: order.id, isValid }, { status: 200 });
+    try {
+        const isValid = verifySignature(canonicalProduct, order.signature);
+        return NextResponse.json({ orderId: order.id, isValid }, { status: 200 });
+    } catch (error) {
+        console.error("Lỗi khi xác thực chữ ký", error);
+        return NextResponse.json({ orderId: order.id, isValid: false }, { status: 500 });
+    }
 }

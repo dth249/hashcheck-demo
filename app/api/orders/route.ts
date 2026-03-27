@@ -30,31 +30,17 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { product_id, quantity } = body;
-        const parsedProductId = Number(product_id);
-        const parsedQuantity = Number(quantity);
+        const { productId, quantity } = body;
 
-        if (product_id === undefined || quantity === undefined) {
+        if (!productId || !quantity) {
             return NextResponse.json(
-                { success: false, message: "Thieu product_id hoac quantity" },
-                { status: 400 }
-            );
-        }
-
-        if (
-            !Number.isInteger(parsedProductId) ||
-            !Number.isInteger(parsedQuantity) ||
-            parsedProductId <= 0 ||
-            parsedQuantity <= 0
-        ) {
-            return NextResponse.json(
-                { success: false, message: "product_id va quantity phai la so nguyen duong" },
+                { success: false, message: "Thieu productId hoac quantity" },
                 { status: 400 }
             );
         }
 
         const productResult = await conn`
-            SELECT id, name, price FROM products WHERE id = ${parsedProductId}
+            SELECT id, name, price FROM products WHERE id = ${productId}
         `;
 
         if (productResult.length === 0) {
@@ -65,14 +51,14 @@ export async function POST(req: NextRequest) {
         }
 
         const product = productResult[0];
-        const totalPrice = Number(product.price) * parsedQuantity;
-        const createdAt = new Date();
+        const totalPrice = Number(product.price) * quantity;
+        const createdAt = Date.now();
 
         const orderData = {
-            product_id: parsedProductId,
-            quantity: parsedQuantity,
-            total_price: totalPrice,
-            created_at: createdAt.toISOString(),
+            productId: productId,
+            quantity: quantity,
+            totalPrice: totalPrice,
+            createdAt: createdAt.toString(),
         };
 
         const canonicalizedData = canonicalizeData(orderData);
@@ -99,8 +85,8 @@ export async function POST(req: NextRequest) {
                 signature
             )
             VALUES (
-                ${parsedProductId},
-                ${parsedQuantity},
+                ${productId},
+                ${quantity},
                 ${totalPrice},
                 ${createdAt},
                 ${hash},
