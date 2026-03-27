@@ -109,14 +109,15 @@ export default function AdminDashboard() {
                     <table className="w-full border-collapse bg-white text-sm">
                         <thead>
                             <tr className="bg-gray-100 border-b border-gray-300 font-bold">
-                                <th className="px-3 py-2 text-left border-r border-gray-300">ID Order</th>
-                                <th className="px-3 py-2 text-left border-r border-gray-300">Product ID</th>
-                                <th className="px-3 py-2 text-left border-r border-gray-300">Quantity</th>
-                                <th className="px-3 py-2 text-left border-r border-gray-300">Total Price</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Mã đơn hàng</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Mã sản phẩm</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Tên sản phẩm</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Số lượng</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Tổng tiền</th>
                                 <th className="px-3 py-2 text-left border-r border-gray-300">Hash</th>
-                                <th className="px-3 py-2 text-left border-r border-gray-300">Signature</th>
-                                <th className="px-3 py-2 text-left border-r border-gray-300">Status</th>
-                                <th className="px-3 py-2 text-center">Action</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Chữ ký</th>
+                                <th className="px-3 py-2 text-left border-r border-gray-300">Trạng thái</th>
+                                <th className="px-3 py-2 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -128,6 +129,7 @@ export default function AdminDashboard() {
                                 <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
                                     <td className="px-3 py-2 border-r border-gray-200 text-center">{order.id}</td>
                                     <td className="px-3 py-2 border-r border-gray-200 text-center font-medium">{order.product_id}</td>
+                                    <td className="px-3 py-2 border-r border-gray-200 text-center">{order.product_name}</td>
                                     <td className="px-3 py-2 border-r border-gray-200 text-center">{order.quantity}</td>
                                     <td className="px-3 py-2 border-r border-gray-200 font-bold text-red-600">
                                         {order.total_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
@@ -145,7 +147,7 @@ export default function AdminDashboard() {
                                         <button
                                             onClick={() => handleVerify(order.id)}
                                             disabled={verifyingId !== null}
-                                            className="bg-red-500 text-white px-2 py-1 text-xs font-bold hover:bg-red-600 disabled:bg-gray-400 text-nowrap"
+                                            className="bg-red-500 text-white px-2 py-1 text-xs font-semibold hover:bg-red-600 disabled:bg-gray-400 text-nowrap"
                                         >
                                             {verifyingId === order.id ? "Kiểm tra..." : "Kiểm tra"}
                                         </button>
@@ -167,11 +169,11 @@ export default function AdminDashboard() {
 function StatusBadge({ status }: { status: Order['status'] }) {
     switch (status) {
         case 'unverified':
-            return <span className="p-1 px-2 border border-gray-300 text-gray-400 text-[10px] font-bold text-nowrap">Chưa kiểm tra</span>;
+            return <span className="p-1 px-2 border border-gray-300 text-gray-400 text-[10px] font-semibold text-nowrap">Chưa kiểm tra</span>;
         case 'valid':
-            return <span className="p-1 px-2 bg-green-500 text-white text-[10px] font-bold text-nowrap">Hợp lệ</span>;
+            return <span className="p-1 px-2 bg-green-500 text-white text-[10px] font-semibold text-nowrap">Hợp lệ</span>;
         case 'invalid':
-            return <span className="p-1 px-2 bg-red-500 text-white text-[10px] font-bold animate-pulse text-nowrap">Bị can thiệp</span>;
+            return <span className="p-1 px-2 bg-red-500 text-white text-[10px] font-semibold animate-pulse text-nowrap">Bị can thiệp</span>;
     }
 }
 
