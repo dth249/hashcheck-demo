@@ -10,11 +10,13 @@ export default function ProductDetail() {
     const id = Number(params.id);
     const [quantity, setQuantity] = useState(1);
     const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetch(`/api/products/${id}`)
             .then((res) => res.json())
-            .then((data) => setProduct(data));
+            .then((data) => setProduct(data.product))
+            .finally(() => setLoading(false));
     }, [id]);
 
     const handleQuantityChange = (amount: number) => {
@@ -39,6 +41,38 @@ export default function ProductDetail() {
                     alert(data.message);
                 }
             })
+    }
+
+    if (loading) {
+        return (
+            <div className="flex flex-col gap-6">
+                <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-100 border border-gray-200 animate-pulse">
+                    {/* Ảnh */}
+                    <div className="w-full aspect-square bg-gray-200" />
+                    {/* Thông tin */}
+                    <div className="flex flex-col gap-4">
+                        <div className="h-8 bg-gray-200 rounded w-2/3" />
+                        <div className="h-px bg-gray-300" />
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <div className="w-10 h-10 bg-gray-200 rounded" />
+                                <div className="w-12 h-10 bg-gray-200 rounded" />
+                                <div className="w-10 h-10 bg-gray-200 rounded" />
+                            </div>
+                        </div>
+                        <div className="h-12 bg-gray-200 rounded" />
+                        <div className="h-px bg-gray-300" />
+                        <div className="flex flex-col gap-2">
+                            <div className="h-3 bg-gray-200 rounded w-32" />
+                            <div className="h-3 bg-gray-200 rounded w-full" />
+                            <div className="h-3 bg-gray-200 rounded w-5/6" />
+                            <div className="h-3 bg-gray-200 rounded w-4/6" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (!product) {

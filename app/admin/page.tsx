@@ -14,42 +14,6 @@ export type Order = {
     status: 'unverified' | 'valid' | 'invalid';
 }
 
-export const OrdersExample: Order[] = [
-    {
-        id: 1,
-        product_id: 1,
-        product_name: "Áo thun nam",
-        quantity: 2,
-        total_price: 300000,
-        hash: "7a8b9cf1e2",
-        signature: "sig_001",
-        created_at: "2024-03-19 14:00",
-        status: "unverified"
-    },
-    {
-        id: 2,
-        product_id: 2,
-        product_name: "Áo thun nữ",
-        quantity: 1,
-        total_price: 120000,
-        hash: "a1b2cdd4e5",
-        signature: "sig_002",
-        created_at: "2024-03-19 14:05",
-        status: "unverified"
-    },
-    {
-        id: 3,
-        product_id: 3,
-        product_name: "Quần short nam",
-        quantity: 3,
-        total_price: 540000,
-        hash: "e9f8g7h6i5",
-        signature: "sig_fake",
-        created_at: "2024-03-19 14:10",
-        status: "unverified"
-    },
-];
-
 export default function AdminDashboard() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -61,12 +25,12 @@ export default function AdminDashboard() {
                 const res = await fetch('/api/orders');
                 if (res.ok) {
                     const data = await res.json();
-                    setOrders(data.map((o: any) => ({ ...o, status: 'unverified' })));
+                    setOrders(data.orders);
                 } else {
                     throw new Error("API failed");
                 }
             } catch (err) {
-                setOrders(OrdersExample);
+                console.error(err);
             } finally {
                 setLoading(false);
             }
@@ -129,7 +93,7 @@ export default function AdminDashboard() {
                                 <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
                                     <td className="px-3 py-2 border-r border-gray-200 text-center">{order.id}</td>
                                     <td className="px-3 py-2 border-r border-gray-200 text-center font-medium">{order.product_id}</td>
-                                    <td className="px-3 py-2 border-r border-gray-200 text-center">{order.product_name}</td>
+                                    <td className="px-3 py-2 border-r border-gray-200 text-center text-nowrap">{order.product_name}</td>
                                     <td className="px-3 py-2 border-r border-gray-200 text-center">{order.quantity}</td>
                                     <td className="px-3 py-2 border-r border-gray-200 font-bold text-red-600">
                                         {order.total_price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
