@@ -1,10 +1,11 @@
 import conn from "@/lib/db";
-import { NextResponse } from "next/server";
+import { canonicalizeData, hashData, signData } from "@/lib/main";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
     try {
         const result = await conn`
-        SELECT 
+        SELECT
             o.id,
             o.product_id,
             o.quantity,
@@ -16,14 +17,11 @@ export async function GET() {
         ORDER BY o.created_at DESC
         `;
 
+        return NextResponse.json(result, { status: 200 });
+    } catch (error: unknown) {
+        console.error("Loi khi lay danh sach don hang", error);
         return NextResponse.json(
-            result,
-            { status: 200 }
-        );
-    } catch (error: any) {
-        console.error("Lỗi khi lấy danh sách đơn hàng", error);
-        return NextResponse.json(
-            { success: false, message: "Lấy danh sách đơn hàng thất bại", errorDetail: error },
+            { success: false, message: "Lay danh sach don hang that bai" },
             { status: 500 }
         );
     }
@@ -33,43 +31,110 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { product_id, quantity } = body;
+        const parsedProductId = Number(product_id);
+        const parsedQuantity = Number(quantity);
 
-        if (!product_id || !quantity) {
+        if (product_id === undefined || quantity === undefined) {
             return NextResponse.json(
-                { success: false, message: "Thiếu product_id hoặc quantity" },
+                { success: false, message: "Thieu product_id hoac quantity" },
                 { status: 400 }
             );
         }
-        
+
+        if (
+            !Number.isInteger(parsedProductId) ||
+            !Number.isInteger(parsedQuantity) ||
+            parsedProductId <= 0 ||
+            parsedQuantity <= 0
+        ) {
+            return NextResponse.json(
+                { success: false, message: "product_id va quantity phai la so nguyen duong" },
+                { status: 400 }
+            );
+        }
+
         const productResult = await conn`
-        SELECT price FROM products WHERE id = ${product_id}
+            SELECT id, name, price FROM products WHERE id = ${parsedProductId}
         `;
 
         if (productResult.length === 0) {
             return NextResponse.json(
-                { success: false, message: "Sản phẩm không tồn tại" },
+                { success: false, message: "San pham khong ton tai" },
                 { status: 404 }
             );
         }
 
-        const price = productResult[0].price;
-        const total_price = price * quantity;
+        const product = productResult[0];
+        const totalPrice = Number(product.price) * parsedQuantity;
+        const createdAt = new Date();
 
-        // Tạo đơn hàng
+        const orderData = {
+            product_id: parsedProductId,
+            quantity: parsedQuantity,
+            total_price: totalPrice,
+            created_at: createdAt.toISOString(),
+        };
+
+        const canonicalizedData = canonicalizeData(orderData);
+        const hash = hashData(canonicalizedData);
+
+        let signature: string;
+        try {
+            signature = signData(canonicalizedData);
+        } catch (error) {
+            console.error("Loi khi ky RSA:", error);
+            return NextResponse.json(
+                { success: false, message: "Loi xu ly chu ky" },
+                { status: 500 }
+            );
+        }
+
         const result = await conn`
-        INSERT INTO orders (product_id, quantity, total_price)
-        VALUES (${product_id}, ${quantity}, ${total_price})
-        RETURNING id, product_id, quantity, total_price, created_at
+            INSERT INTO orders (
+                product_id,
+                quantity,
+                total_price,
+                created_at,
+                hash,
+                signature
+            )
+            VALUES (
+                ${parsedProductId},
+                ${parsedQuantity},
+                ${totalPrice},
+                ${createdAt},
+                ${hash},
+                ${signature}
+            )
+            RETURNING id, product_id, quantity, total_price, created_at, hash, signature
         `;
 
+        const order = result[0];
+
         return NextResponse.json(
-            { success: true, order: result[0] },
+            {
+                success: true,
+                orderId: order.id,
+                hash: order.hash,
+                signature: order.signature,
+                order: {
+                    id: order.id,
+                    product_id: order.product_id,
+                    quantity: order.quantity,
+                    total_price: order.total_price,
+                    created_at: order.created_at,
+                },
+            },
             { status: 201 }
         );
     } catch (error: unknown) {
-        console.error("Lỗi khi tạo đơn hàng", error);
+        console.error("Loi khi tao don hang:", error);
+
         return NextResponse.json(
-            { success: false, message: "Tạo đơn hàng thất bại", errorDetail: error },
+            {
+                success: false,
+                message: "Tao don hang that bai",
+            },
             { status: 500 }
         );
     }
