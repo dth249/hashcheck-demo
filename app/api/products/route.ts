@@ -4,13 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
     try {
         const result = await conn`
-        SELECT 
-            p.id,
-            p.name,
-            p.price,
-            p.description,
-            p.created_at
-        FROM products AS p
+        SELECT * FROM products AS p
         ORDER BY p.created_at DESC
         `;
 
