@@ -42,9 +42,9 @@ export async function GET(req: NextRequest) {
     // Xác thực
     try {
         const isValid = verifySignature(canonicalProduct, order.signature);
-        return NextResponse.json({ orderId: order.id, isValid }, { status: 200 });
+        return NextResponse.json({ success: true, orderId: order.id, isValid }, { status: 200 });
     } catch (error) {
         console.error("Lỗi khi xác thực chữ ký", error);
-        return NextResponse.json({ orderId: order.id, isValid: false }, { status: 500 });
+        return NextResponse.json({ success: false, orderId: order.id, isValid: false }, { status: 500 });
     }
 }

@@ -8,16 +8,18 @@ export async function GET() {
         SELECT
             o.id,
             o.product_id,
+            p.name as product_name,
             o.quantity,
             o.total_price,
             o.hash,
             o.signature,
             o.created_at
         FROM orders AS o
+        JOIN products AS p ON p.id = o.product_id
         ORDER BY o.created_at DESC
         `;
 
-        return NextResponse.json(result, { status: 200 });
+        return NextResponse.json({ success: true, orders: result }, { status: 200 });
     } catch (error: unknown) {
         console.error("Loi khi lay danh sach don hang", error);
         return NextResponse.json(
