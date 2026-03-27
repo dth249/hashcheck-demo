@@ -7,7 +7,9 @@ export default function Products() {
     const [products, setProducts] = useState<Product[]>([]);
 
     useEffect(() => {
-        setProducts(ProductsExample);
+        fetch("/api/products")
+            .then((res) => res.json())
+            .then((data) => setProducts(data));
     }, []);
 
     return (
@@ -17,7 +19,7 @@ export default function Products() {
                 {products.map((product) => (
                     <Link href={`/product/${product.id}`} className="p-2 bg-white border border-gray-200 gap-3 flex flex-col hover:-translate-y-2 transition-all cursor-pointer" key={`${product.id}-${product.name}`}>
                         <div className="w-full h-[200px] relative">
-                            <Image src={`https://picsum.photos/300/300?random=${product.id}`} alt={product.name} fill className="object-cover" />
+                            <Image src={product.img_url} alt={product.name} fill className="object-cover" />
                         </div>
                         <p>{product.name}</p>
                         <div className="flex justify-between items-center">
@@ -37,43 +39,7 @@ export type Product = {
     name: string;
     price: number;
     description: string;
+    img_url: string;
+    created_at: string;
 }
 
-export const ProductsExample: Product[] = [
-    {
-        id: 1,
-        name: "Áo thun nam",
-        price: 150000,
-        description: "Áo thun nam chất liệu cotton thoáng mát, thấm hút mồ hôi tốt. Kiểu dáng trẻ trung, năng động, phù hợp cho nhiều dịp.",
-    },
-    {
-        id: 2,
-        name: "Áo thun nữ",
-        price: 120000,
-        description: "Áo thun nữ form rộng, tôn dáng. Chất vải mềm mịn, không xù lông mang lại cảm giác thoải mái khi mặc.",
-    },
-    {
-        id: 3,
-        name: "Quần short nam",
-        price: 180000,
-        description: "Quần short nam kaki cao cấp. Thiết kế hiện đại, đường may chắc chắn. Có nhiều màu sắc để lựa chọn.",
-    },
-    {
-        id: 4,
-        name: "Quần short nam",
-        price: 180000,
-        description: "Quần short nam kaki cao cấp. Thiết kế hiện đại, đường may chắc chắn. Có nhiều màu sắc để lựa chọn.",
-    },
-    {
-        id: 5,
-        name: "Quần short nam",
-        price: 180000,
-        description: "Quần short nam kaki cao cấp. Thiết kế hiện đại, đường may chắc chắn. Có nhiều màu sắc để lựa chọn.",
-    },
-    {
-        id: 6,
-        name: "Quần short nam",
-        price: 180000,
-        description: "Quần short nam kaki cao cấp. Thiết kế hiện đại, đường may chắc chắn. Có nhiều màu sắc để lựa chọn.",
-    },
-];

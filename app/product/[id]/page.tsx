@@ -3,17 +3,43 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Product, ProductsExample } from "@/components/Products";
+import { Product } from "@/components/Products";
 
 export default function ProductDetail() {
     const params = useParams();
     const id = Number(params.id);
+    const [quantity, setQuantity] = useState(1);
     const [product, setProduct] = useState<Product | null>(null);
 
     useEffect(() => {
-        const foundProduct = ProductsExample.find(p => p.id === id);
-        setProduct(foundProduct || null);
+        fetch(`/api/products/${id}`)
+            .then((res) => res.json())
+            .then((data) => setProduct(data));
     }, [id]);
+
+    const handleQuantityChange = (amount: number) => {
+        setQuantity((prev) => Math.max(1, prev + amount));
+    }
+    const handleBuy = () => {
+        fetch("/api/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                productId: id,
+                quantity: quantity,
+            }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("Đặt đơn hàng thành công");
+                } else {
+                    alert(data.message);
+                }
+            })
+    }
 
     if (!product) {
         return (
@@ -33,7 +59,7 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-100 border border-gray-200">
                 <div className="w-full aspect-square relative border border-gray-200 bg-white">
                     <Image
-                        src={`https://picsum.photos/600/600?random=${product.id}`}
+                        src={product.img_url}
                         alt={product.name}
                         fill
                         className="object-cover"
@@ -46,17 +72,28 @@ export default function ProductDetail() {
                         {product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
                     </p>
 
-                    <div className="h-px bg-gray-400 my-2"></div>
+                    <div className="h-px bg-gray-300 my-2"></div>
+
+                    <div>
+                        <p className="mb-2 text-sm">Số lượng:</p>
+                        <div className="flex items-center gap-2">
+                            <button className="w-10 h-10 border border-gray-300 cursor-pointer" onClick={() => handleQuantityChange(-1)}>-</button>
+                            <input type="text" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="w-12 h-10 text-center border-none outline-none" />
+                            <button className="w-10 h-10 border border-gray-300 cursor-pointer" onClick={() => handleQuantityChange(1)}>+</button>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
+                        <button className="flex-1 bg-red-500 text-white font-bold py-3 px-6 hover:bg-red-600 transition-colors" onClick={handleBuy}>
+                            MUA NGAY
+                        </button>
+                    </div>
+
+                    <div className="h-px bg-gray-300 my-2"></div>
 
                     <div className="text-gray-700 leading-relaxed">
                         <p className="font-semibold mb-2">Mô tả sản phẩm:</p>
                         <p>{product.description}</p>
-                    </div>
-
-                    <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
-                        <button className="flex-1 bg-red-500 text-white font-bold py-3 px-6 hover:bg-red-600 transition-colors" onClick={() => alert("Mua ngay")}>
-                            MUA NGAY
-                        </button>
                     </div>
                 </div>
             </div>
