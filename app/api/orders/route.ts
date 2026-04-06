@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
 
         const orderData = {
             productId: productId,
+            productPrice: product.price,
             quantity: quantity,
             totalPrice: totalPrice,
             createdAt: createdAt.toString(),
