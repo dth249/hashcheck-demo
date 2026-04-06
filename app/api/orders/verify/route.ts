@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     */
     const dataToHash = {
         productId: product.id,
+        productPrice: product.price,
         quantity: order.quantity,
         totalPrice: order.total_price,
         createdAt: order.created_at,
